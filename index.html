@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#ffffff" />
+    <title>個人作品集｜應屆畢業生</title>
+    <meta name="description" content="單頁個人作品集：關於我、技能、作品集、學習與經歷、聯絡方式。" />
+    <link rel="preconnect" href="https://example.invalid" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">跳到主要內容</a>
+
+    <header class="topbar" role="banner">
+      <div class="container topbar__inner">
+        <a class="brand" href="#home" aria-label="回到首頁">
+          <span class="brand__mark" id="brandMark" aria-hidden="true">P</span>
+          <span class="brand__text" id="brandText">Peter</span>
+        </a>
+
+        <nav class="nav" aria-label="主要導覽">
+          <a class="nav__link" href="#about">關於我</a>
+          <a class="nav__link" href="#skills">技能</a>
+          <a class="nav__link" href="#projects">作品集</a>
+          <a class="nav__link" href="#experience">學習與經歷</a>
+          <a class="nav__link" href="#contact">聯絡</a>
+        </nav>
+
+        <div class="topbar__actions">
+          <button id="themeToggle" class="btn btn--ghost" type="button" aria-label="切換深色模式">
+            <span class="icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 18a6 6 0 1 1 0-12v12Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </span>
+            <span class="topbar__actionsText">主題</span>
+          </button>
+          <button id="menuToggle" class="btn btn--ghost topbar__menuBtn" type="button" aria-label="開啟選單" aria-expanded="false" aria-controls="mobileNav">
+            <span class="icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </span>
+            <span class="topbar__actionsText">選單</span>
+          </button>
+        </div>
+      </div>
+
+      <nav id="mobileNav" class="mobileNav" aria-label="行動版導覽" hidden>
+        <div class="container mobileNav__inner">
+          <a class="mobileNav__link" href="#about">關於我</a>
+          <a class="mobileNav__link" href="#skills">技能</a>
+          <a class="mobileNav__link" href="#projects">作品集</a>
+          <a class="mobileNav__link" href="#experience">學習與經歷</a>
+          <a class="mobileNav__link" href="#contact">聯絡</a>
+        </div>
+      </nav>
+    </header>
+
+    <main id="main" class="page" role="main">
+      <section id="home" class="hero">
+        <div class="container hero__grid">
+          <div class="hero__copy">
+            <div class="badge reveal" data-reveal>
+              <span class="dot" aria-hidden="true"></span>
+              <span id="statusText">開放合作中</span>
+            </div>
+
+            <h1 class="hero__title reveal" data-reveal>
+              你好，我是 <span id="nameText" class="gradText">Peter</span>。
+            </h1>
+
+            <p class="hero__subtitle reveal" data-reveal>
+              <span id="headlinePrefix">專注於</span>
+              <span class="role" id="roleText" aria-live="polite">前端開發</span>
+              <span class="caret" aria-hidden="true"></span>
+            </p>
+
+            <p id="summaryText" class="hero__summary reveal" data-reveal>
+              我喜歡把複雜的問題拆小、做成好用的產品。擅長在設計與工程之間找到平衡，讓畫面漂亮、也跑得快。
+            </p>
+
+            <div class="hero__cta reveal" data-reveal>
+              <a class="btn btn--primary" href="#projects">看作品</a>
+              <a class="btn btn--ghost" href="#contact">聯絡我</a>
+              <button id="copyEmailBtn" class="btn btn--ghost" type="button">
+                複製 Email
+              </button>
+            </div>
+
+            <div class="hero__meta reveal" data-reveal>
+              <div class="metaItem">
+                <span class="metaItem__label">所在地</span>
+                <span id="locationText" class="metaItem__value">台灣</span>
+              </div>
+              <div class="metaItem">
+                <span class="metaItem__label">主要技能</span>
+                <span id="topSkillText" class="metaItem__value">HTML / CSS / JavaScript</span>
+              </div>
+              <div class="metaItem">
+                <span class="metaItem__label">目前狀態</span>
+                <span id="availabilityText" class="metaItem__value">接案 / 合作</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="hero__card reveal" data-reveal>
+            <div class="profile">
+              <div class="profile__avatar" aria-hidden="true">
+                <div class="avatarRing"></div>
+                <div class="avatarFace">
+                  <span class="avatarInitial" id="avatarInitial">P</span>
+                </div>
+              </div>
+              <div class="profile__info">
+                <div class="profile__nameRow">
+                  <h2 class="profile__name" id="cardName">Peter</h2>
+                  <span class="chip" id="chipText">Frontend</span>
+                </div>
+                <p class="profile__desc" id="cardDesc">
+                  做出讓人一眼喜歡、每天都想用的介面。
+                </p>
+                <div class="profile__links">
+                  <a id="githubLink" class="linkBtn" href="#" target="_blank" rel="noreferrer">GitHub</a>
+                  <a id="linkedinLink" class="linkBtn" href="#" target="_blank" rel="noreferrer">LinkedIn</a>
+                  <a id="portfolioLink" class="linkBtn" href="#projects">作品集</a>
+                </div>
+              </div>
+            </div>
+
+            <div class="stats">
+              <div class="stat">
+                <div class="stat__num" id="statYears">3+</div>
+                <div class="stat__label">畢業</div>
+              </div>
+              <div class="stat">
+                <div class="stat__num" id="statProjects">12</div>
+                <div class="stat__label">作品 / 專題</div>
+              </div>
+              <div class="stat">
+                <div class="stat__num" id="statFocus">UX</div>
+                <div class="stat__label">求職方向</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero__bg" aria-hidden="true">
+          <div class="blob blob--a"></div>
+          <div class="blob blob--b"></div>
+          <div class="gridGlow"></div>
+        </div>
+      </section>
+
+      <section id="about" class="section">
+        <div class="container">
+          <div class="sectionHead reveal" data-reveal>
+            <h2 class="sectionTitle">關於我</h2>
+            <p class="sectionLead" id="aboutLead">
+              我在意「做得出來」更在意「做得好」。從資訊架構、版面節奏到互動細節，都希望能讓使用者少想一步。
+            </p>
+          </div>
+
+          <div class="aboutGrid">
+            <article class="card reveal" data-reveal>
+              <h3 class="card__title">我擅長什麼</h3>
+              <p class="card__text" id="aboutStrength">
+                以純前端把想法快速落地：切版、動效、元件化、效能與可用性（a11y）。也能把需求拆成可交付的里程碑。
+              </p>
+              <div class="pillRow" id="strengthPills"></div>
+            </article>
+
+            <article class="card reveal" data-reveal>
+              <h3 class="card__title">我在找什麼</h3>
+              <p class="card__text" id="aboutLooking">
+                期待跟在意品質的團隊合作：願意討論、願意迭代、願意把產品做到更成熟。
+              </p>
+              <div class="callout">
+                <div class="callout__title">一句話自介</div>
+                <div class="callout__body" id="oneLiner">把複雜變簡單，把介面做漂亮。</div>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section id="skills" class="section section--alt">
+        <div class="container">
+          <div class="sectionHead reveal" data-reveal>
+            <h2 class="sectionTitle">技能</h2>
+            <p class="sectionLead">這些是我最常用、也最有信心交付的能力。</p>
+          </div>
+
+          <div class="skillsLayout">
+            <div class="card reveal" data-reveal>
+              <h3 class="card__title">技能雷達（精選）</h3>
+              <div class="skillList" id="skillList" aria-label="技能清單"></div>
+            </div>
+
+            <div class="card reveal" data-reveal>
+              <h3 class="card__title">工具與習慣</h3>
+              <ul class="checkList" id="toolList"></ul>
+              <div class="divider"></div>
+              <h3 class="card__title">我重視的事</h3>
+              <div class="pillRow" id="valuePills"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="projects" class="section">
+        <div class="container">
+          <div class="sectionHead reveal" data-reveal>
+            <h2 class="sectionTitle">作品集</h2>
+            <p class="sectionLead">一些我做過的東西（可替換成你的專案）。</p>
+          </div>
+
+          <div class="filterBar reveal" data-reveal>
+            <div class="filterBar__title">篩選</div>
+            <div class="filterBar__buttons" id="projectFilters" role="tablist" aria-label="作品集篩選"></div>
+          </div>
+
+          <div class="grid projectsGrid" id="projectsGrid" aria-label="作品集清單"></div>
+        </div>
+      </section>
+
+      <section id="experience" class="section section--alt">
+        <div class="container">
+          <div class="sectionHead reveal" data-reveal>
+            <h2 class="sectionTitle">學習與經歷</h2>
+            <p class="sectionLead">教育背景、專題、實習與社團（用時間軸快速帶過重點）。</p>
+          </div>
+
+          <div class="timeline card reveal" data-reveal id="timeline"></div>
+        </div>
+      </section>
+
+      <section id="contact" class="section">
+        <div class="container">
+          <div class="sectionHead reveal" data-reveal>
+            <h2 class="sectionTitle">聯絡</h2>
+            <p class="sectionLead">想約面試或了解更多，直接寄信或用表單產生 Email 都可以。</p>
+          </div>
+
+          <div class="contactGrid">
+            <div class="card reveal" data-reveal>
+              <h3 class="card__title">快速聯絡</h3>
+
+              <div class="contactRow">
+                <div class="contactRow__label">Email</div>
+                <div class="contactRow__value">
+                  <a id="emailLink" href="mailto:hello@example.com">hello@example.com</a>
+                </div>
+                <div class="contactRow__action">
+                  <button id="copyEmailBtn2" class="btn btn--ghost btn--sm" type="button">複製</button>
+                </div>
+              </div>
+
+              <div class="contactRow">
+                <div class="contactRow__label">GitHub</div>
+                <div class="contactRow__value">
+                  <a id="githubLink2" href="#" target="_blank" rel="noreferrer">前往</a>
+                </div>
+              </div>
+
+              <div class="contactRow">
+                <div class="contactRow__label">LinkedIn</div>
+                <div class="contactRow__value">
+                  <a id="linkedinLink2" href="#" target="_blank" rel="noreferrer">前往</a>
+                </div>
+              </div>
+
+              <div class="divider"></div>
+              <div class="note" id="contactNote">
+                小提醒：這是純前端網站，表單會用你的預設郵件程式送出（mailto），不用後端。
+              </div>
+            </div>
+
+            <div class="card reveal" data-reveal>
+              <h3 class="card__title">寄一封信</h3>
+              <form id="contactForm" class="form">
+                <label class="field">
+                  <span class="field__label">你的名字</span>
+                  <input name="name" type="text" autocomplete="name" placeholder="例如：小明" required />
+                </label>
+                <label class="field">
+                  <span class="field__label">主旨</span>
+                  <input name="subject" type="text" placeholder="例如：合作提案 / 面試邀約" required />
+                </label>
+                <label class="field">
+                  <span class="field__label">想說的話</span>
+                  <textarea name="message" rows="6" placeholder="簡單描述需求、時程、預算（如果方便）" required></textarea>
+                </label>
+
+                <div class="form__actions">
+                  <button class="btn btn--primary" type="submit">用 Email 送出</button>
+                  <button id="resetBtn" class="btn btn--ghost" type="reset">清除</button>
+                </div>
+
+                <p class="form__hint" id="formHint">
+                  如果你沒有設定預設郵件程式，也可以直接複製 Email 聯絡我。
+                </p>
+              </form>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="container footer__inner">
+        <div class="footer__left">
+          <span>© <span id="yearText"></span> <span id="footerName">Peter</span></span>
+          <span class="sep" aria-hidden="true">·</span>
+          <span id="lastUpdated">單頁個人網站</span>
+        </div>
+        <div class="footer__right">
+          <a class="footerLink" href="#home">回頂部</a>
+        </div>
+      </div>
+    </footer>
+
+    <div id="toast" class="toast" role="status" aria-live="polite" aria-atomic="true" hidden></div>
+
+    <script src="./script.js"></script>
+  </body>
+</html>
