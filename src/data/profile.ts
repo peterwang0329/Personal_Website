@@ -5,35 +5,35 @@
 export const PROFILE = {
 
   // ── 基本資訊 ──────────────────────────────────────────────
-  name: "Peter",               // 你的名字（顯示在首頁標題、導覽列品牌、頁尾）
+  name: "汪章貴",               // 你的名字（顯示在首頁標題、導覽列品牌、頁尾）
   headlinePrefix: "專注於",     // 職業標題前綴（例如「專注於」前端開發）
   roles: [                     // 首頁自動輪播的職稱，可增減項目
-    "前端開發",
-    "介面設計",
-    "互動體驗",
+    "後端開發",
+    "資料分析",
+    "影像辨識",
     "效能與可用性",
   ],
-  statusText: "開放合作中",    // 首頁狀態徽章文字（例如：求職中、開放合作中）
+  statusText: "就學中",    // 首頁狀態徽章文字（例如：求職中、開放合作中）
   summary: "我喜歡把複雜的問題拆小、做成好用的產品。擅長在設計與工程之間找到平衡，讓畫面漂亮、也跑得快。",
   // ↑ 首頁的自我介紹一段話
 
   location: "台灣",            // 所在地，顯示在首頁資訊欄
-  topSkillText: "React / TypeScript / CSS", // 主要技能，顯示在首頁資訊欄
-  availability: "接案 / 合作", // 目前狀態，顯示在首頁資訊欄
+  topSkillText: "Python / C / AI相關", // 主要技能，顯示在首頁資訊欄
+  availability: "就學中", // 目前狀態，顯示在首頁資訊欄
 
   // ── 右側個人卡片 ───────────────────────────────────────────
   chipText: "Frontend",        // 名字旁邊的職稱標籤（小膠囊）
   cardDesc: "做出讓人一眼喜歡、每天都想用的介面。", // 個人卡片上的一句話描述
 
   stats: {
-    years: "3+",       // 工作或學習年數
-    projects: "15",    // 完成的作品 / 專案數量
-    focus: "UX",       // 求職方向或專注領域
+    years: "0",       // 工作或學習年數
+    projects: "",    // 完成的作品 / 專案數量
+    focus: "",       // 求職方向或專注領域
   },
 
   // ── 對外連結 ───────────────────────────────────────────────
   links: {
-    email: "hello@example.com",        // 你的 Email（點擊「複製 Email」會複製這個）
+    email: "peterwang95267@gmail.com",        // 你的 Email（點擊「複製 Email」會複製這個）
     github: "https://github.com",      // GitHub 個人頁面網址
     linkedin: "https://linkedin.com",  // LinkedIn 個人頁面網址
   },
@@ -59,11 +59,11 @@ export const PROFILE = {
   // ── 技能雷達（進度條）─────────────────────────────────────
   // name: 技能名稱 | levelLabel: 熟練程度文字 | value: 進度條百分比（0–100）
   skills: [
-    { name: "React / Next.js",    levelLabel: "精通", value: 92 },
-    { name: "TypeScript",         levelLabel: "精通", value: 90 },
-    { name: "CSS（RWD / 動效）",  levelLabel: "精通", value: 88 },
-    { name: "可用性 / 無障礙",    levelLabel: "熟練", value: 78 },
-    { name: "效能與最佳化",        levelLabel: "熟練", value: 76 },
+    { name: "Python", levelLabel: "精通", value: 92 },
+    { name: "Websign / AI", levelLabel: "精通", value: 88 },
+    { name: "Unity / C#", levelLabel: "熟練", value: 80 },
+    { name: "向量資料處理", levelLabel: "熟練", value: 78 },
+    { name: "AI 應用", levelLabel: "熟練", value: 78 },
   ],
 
   // ── 工具與習慣（清單）────────────────────────────────────
@@ -103,13 +103,8 @@ export const PROFILE = {
   experience: [
     {
       time: "2024 — 現在",
-      title: "自由接案 / 個人專案",
-      body: "接案與自做專案並行：著重介面品質、互動細節與交付節奏，讓需求能快速落地並持續迭代。",
-    },
-    {
-      time: "2022 — 2024",
-      title: "前端工程師",
-      body: "與設計/產品協作，建立元件與樣式規範；優化頁面載入與互動效能，提升使用者體驗。",
+      title: "大學生 / 專案製作",
+      body: "大學期間主要在學習程式語言與相關技能，也有一些個人專案製作。",
     },
     // 可以在這裡繼續新增更多經歷，格式如下：
     // {

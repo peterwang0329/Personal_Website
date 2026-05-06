@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Upload, ChevronLeft, ChevronRight, Settings2, List, Maximize, Minimize, X } from "lucide-react";
+import { Upload, ChevronLeft, ChevronRight, Settings2, List, Maximize, Minimize, X, BookOpen, ChevronDown, ChevronUp } from "lucide-react";
 
 interface Chapter {
   title: string;
@@ -14,6 +14,7 @@ export function NovelReader() {
   const [showSettings, setShowSettings] = useState(false);
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [showChapterList, setShowChapterList] = useState(false);
+  const [showFormatInfo, setShowFormatInfo] = useState(false);
   const readerRef = useRef<HTMLDivElement>(null);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -51,6 +52,18 @@ export function NovelReader() {
     setCurrentChapter(0);
   };
 
+  const loadSampleNovel = async () => {
+    try {
+      const response = await fetch(`${import.meta.env.BASE_URL}sample-novel.txt`);
+      if (!response.ok) throw new Error('Network response was not ok');
+      const text = await response.text();
+      parseText(text);
+    } catch (error) {
+      console.error('Failed to load sample novel:', error);
+      alert('無法載入範例小說。');
+    }
+  };
+
   useEffect(() => {
     // 切換章節時回到頂部
     if (readerRef.current) {
@@ -83,12 +96,53 @@ export function NovelReader() {
         <div className="sectionHead reveal is-visible">
           <h2 className="sectionTitle">小說閱讀器</h2>
           <p className="sectionLead">上傳 TXT 檔案即可開始閱讀，支援自動章節分割與護眼模式。</p>
-          <div style={{ marginTop: "24px", display: "flex", justifyContent: "flex-start" }}>
+          <div style={{ marginTop: "16px", marginBottom: "16px" }}>
+            <button 
+              className="btn btn--ghost btn--sm" 
+              onClick={() => setShowFormatInfo(!showFormatInfo)}
+              style={{ display: "inline-flex", alignItems: "center", padding: "8px 12px", background: "rgba(0,0,0,0.05)" }}
+            >
+              <span style={{ marginRight: "8px" }}>格式要求說明</span>
+              {showFormatInfo ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+            </button>
+            
+            {showFormatInfo && (
+              <div style={{ 
+                marginTop: "12px", 
+                padding: "16px", 
+                background: "rgba(0,0,0,0.03)", 
+                borderRadius: "8px",
+                fontSize: "14px",
+                lineHeight: "1.6",
+                textAlign: "left"
+              }}>
+                <h4 style={{ marginTop: 0, marginBottom: "8px" }}>小說檔案格式要求：</h4>
+                <ul style={{ margin: 0, paddingLeft: "20px" }}>
+                  <li>僅支援 <strong>.txt</strong> 純文字檔案格式。</li>
+                  <li>自動章節分割依賴於特定的標題格式，建議使用以下格式：
+                    <ul style={{ marginTop: "4px", marginBottom: "4px", paddingLeft: "20px", color: "var(--muted)" }}>
+                      <li><code>第X章</code> (例如：第一章、第十章、第12章)</li>
+                      <li><code>第X回</code>、<code>第X節</code></li>
+                      <li><code>Chapter X</code> (例如：Chapter 1, Chapter 20)</li>
+                    </ul>
+                  </li>
+                  <li>標題後請保留空格或直接換行，以確保正確識別。</li>
+                  <li>若檔案中未檢測到符合格式的章節標題，系統將把整份文件視為單一章節（「開始閱讀」）。</li>
+                </ul>
+              </div>
+            )}
+          </div>
+
+          <div style={{ marginTop: "24px", display: "flex", justifyContent: "flex-start", gap: "12px", flexWrap: "wrap" }}>
             <label className="btn btn--primary" style={{ cursor: "pointer", margin: 0, display: "inline-flex", alignItems: "center" }}>
               <Upload size={18} style={{ marginRight: "8px" }} />
               上傳 TXT 檔
               <input type="file" accept=".txt" onChange={handleFileUpload} style={{ display: "none" }} />
             </label>
+            <button className="btn btn--ghost" onClick={loadSampleNovel} style={{ display: "inline-flex", alignItems: "center" }}>
+              <BookOpen size={18} style={{ marginRight: "8px" }} />
+              載入範例小說
+            </button>
           </div>
         </div>
 
