@@ -80,6 +80,29 @@ export function NovelReader() {
     }
   }, [showChapterList, currentChapter]);
 
+  useEffect(() => {
+    // 鍵盤快捷鍵：A / ← 上一章，D / → 下一章
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // 若焦點在輸入框或可編輯元素內，不觸發
+      const tag = (e.target as HTMLElement)?.tagName;
+      const isEditable = (e.target as HTMLElement)?.isContentEditable;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || isEditable) return;
+
+      if (chapters.length === 0) return;
+
+      if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
+        e.preventDefault();
+        setCurrentChapter(c => Math.max(0, c - 1));
+      } else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
+        e.preventDefault();
+        setCurrentChapter(c => Math.min(chapters.length - 1, c + 1));
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [chapters]);
+
   const getThemeStyles = () => {
     switch (readerTheme) {
       case "sepia": return { backgroundColor: "#f4ecd8", color: "#433422" };
