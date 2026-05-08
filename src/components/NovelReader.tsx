@@ -10,8 +10,14 @@ export function NovelReader() {
   const [chapters, setChapters] = useState<Chapter[]>([]);
   const [currentChapter, setCurrentChapter] = useState(0);
   const [novelName, setNovelName] = useState<string>("");
-  const [fontSize, setFontSize] = useState(18);
-  const [readerTheme, setReaderTheme] = useState<"light" | "sepia" | "dark" | "gray" | "green">("light");
+  const [fontSize, setFontSize] = useState(() => {
+    const saved = localStorage.getItem('novel_reader_font_size');
+    return saved ? parseInt(saved, 10) : 18;
+  });
+  const [readerTheme, setReaderTheme] = useState<"light" | "sepia" | "dark" | "gray" | "green">(() => {
+    const saved = localStorage.getItem('novel_reader_theme');
+    return (saved as any) || "light";
+  });
   const [showSettings, setShowSettings] = useState(false);
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [showChapterList, setShowChapterList] = useState(false);
@@ -23,6 +29,14 @@ export function NovelReader() {
       localStorage.setItem(`novel_progress_${novelName}`, currentChapter.toString());
     }
   }, [novelName, currentChapter, chapters.length]);
+
+  useEffect(() => {
+    localStorage.setItem('novel_reader_font_size', fontSize.toString());
+  }, [fontSize]);
+
+  useEffect(() => {
+    localStorage.setItem('novel_reader_theme', readerTheme);
+  }, [readerTheme]);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
