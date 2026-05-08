@@ -9,6 +9,7 @@ interface Chapter {
 export function NovelReader() {
   const [chapters, setChapters] = useState<Chapter[]>([]);
   const [currentChapter, setCurrentChapter] = useState(0);
+  const [novelName, setNovelName] = useState<string>("");
   const [fontSize, setFontSize] = useState(18);
   const [readerTheme, setReaderTheme] = useState<"light" | "sepia" | "dark" | "gray" | "green">("light");
   const [showSettings, setShowSettings] = useState(false);
@@ -17,6 +18,12 @@ export function NovelReader() {
   const [showFormatInfo, setShowFormatInfo] = useState(false);
   const readerRef = useRef<HTMLDivElement>(null);
 
+  useEffect(() => {
+    if (novelName && chapters.length > 0) {
+      localStorage.setItem(`novel_progress_${novelName}`, currentChapter.toString());
+    }
+  }, [novelName, currentChapter, chapters.length]);
+
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -24,32 +31,36 @@ export function NovelReader() {
     const reader = new FileReader();
     reader.onload = (event) => {
       const text = event.target?.result as string;
-      parseText(text);
+      parseText(text, file.name);
     };
     reader.readAsText(file);
   };
 
-  const parseText = (text: string) => {
+  const parseText = (text: string, name: string) => {
+    setNovelName(name);
     // 簡單的章節分割邏輯：尋找 "第X章" 或 "Chapter X"
     const chapterRegex = /(?=第[一二三四五六七八九十百千零0-9]+[章回節]\s|Chapter\s+\d+)/g;
     const parts = text.split(chapterRegex);
 
+    let finalChapters: Chapter[] = [];
     if (parts.length === 1) {
       // 若無章節格式，則整包當作第一章
-      setChapters([{ title: "開始閱讀", content: parts[0] }]);
-      setCurrentChapter(0);
-      return;
+      finalChapters = [{ title: "開始閱讀", content: parts[0] }];
+    } else {
+      const parsedChapters = parts.map((part, index) => {
+        const lines = part.trim().split('\n');
+        const title = lines[0].trim() || `第 ${index + 1} 章`;
+        const content = lines.slice(1).join('\n').trim();
+        return { title, content };
+      });
+      finalChapters = parsedChapters.filter(c => c.content.length > 0);
     }
 
-    const parsedChapters = parts.map((part, index) => {
-      const lines = part.trim().split('\n');
-      const title = lines[0].trim() || `第 ${index + 1} 章`;
-      const content = lines.slice(1).join('\n').trim();
-      return { title, content };
-    });
-
-    setChapters(parsedChapters.filter(c => c.content.length > 0));
-    setCurrentChapter(0);
+    setChapters(finalChapters);
+    
+    const savedProgress = localStorage.getItem(`novel_progress_${name}`);
+    const initialChapter = savedProgress ? parseInt(savedProgress, 10) : 0;
+    setCurrentChapter(Math.min(initialChapter, Math.max(0, finalChapters.length - 1)));
   };
 
   const loadSampleNovel = async () => {
@@ -57,7 +68,7 @@ export function NovelReader() {
       const response = await fetch(`${import.meta.env.BASE_URL}sample-novel.txt`);
       if (!response.ok) throw new Error('Network response was not ok');
       const text = await response.text();
-      parseText(text);
+      parseText(text, 'sample-novel.txt');
     } catch (error) {
       console.error('Failed to load sample novel:', error);
       alert('無法載入範例小說。');
