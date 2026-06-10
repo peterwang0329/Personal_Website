@@ -55,6 +55,10 @@ export async function apiFetch<T>(
   options: RequestInit = {}
 ): Promise<T> {
   const token = getToken();
+  
+  // Use VITE_API_URL if it exists (e.g. https://my-backend.onrender.com)
+  const baseUrl = import.meta.env.VITE_API_URL || "";
+  const fullUrl = url.startsWith("http") ? url : `${baseUrl}${url}`;
 
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
@@ -65,7 +69,7 @@ export async function apiFetch<T>(
     headers["Authorization"] = `Bearer ${token}`;
   }
 
-  const response = await fetch(url, {
+  const response = await fetch(fullUrl, {
     cache: "no-store",
     ...options,
     headers,
@@ -101,6 +105,9 @@ export async function apiFetchUpload<T>(
 ): Promise<T> {
   const token = getToken();
 
+  const baseUrl = import.meta.env.VITE_API_URL || "";
+  const fullUrl = url.startsWith("http") ? url : `${baseUrl}${url}`;
+
   const headers: Record<string, string> = {
     ...(options.headers as Record<string, string> || {}),
   };
@@ -109,7 +116,7 @@ export async function apiFetchUpload<T>(
     headers["Authorization"] = `Bearer ${token}`;
   }
 
-  const response = await fetch(url, {
+  const response = await fetch(fullUrl, {
     ...options,
     method: options.method || "POST",
     headers,
