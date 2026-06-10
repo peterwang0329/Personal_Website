@@ -43,6 +43,7 @@ class Book(Base):
     # 關聯
     user = relationship("User", back_populates="books")
     bookmarks = relationship("Bookmark", back_populates="book", cascade="all, delete-orphan")
+    content = relationship("BookContent", back_populates="book", cascade="all, delete-orphan", uselist=False)
 
 
 class Bookmark(Base):
@@ -70,5 +71,5 @@ class BookContent(Base):
     content = Column(Text, nullable=False)
 
     # 關聯
-    book = relationship("Book", backref="content")
+    book = relationship("Book", back_populates="content")
 
