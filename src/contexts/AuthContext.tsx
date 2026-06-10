@@ -4,7 +4,7 @@
  */
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
-import { apiFetch, setToken, removeToken, getToken, ApiError } from "../utils/apiClient";
+import { apiFetch, setToken, removeToken, getToken } from "../utils/apiClient";
 
 /** 使用者資訊介面 */
 export interface UserInfo {

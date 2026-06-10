@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { Moon, Sun, Menu, User, LogOut, Library, LogIn, ChevronDown, Shield } from "lucide-react";
+import { Moon, Sun, Menu, LogOut, Library, LogIn, ChevronDown, Shield } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 
 interface NavbarProps {

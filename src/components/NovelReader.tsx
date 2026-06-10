@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
-import { useSearchParams, useNavigate } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { Upload, ChevronLeft, ChevronRight, Settings2, List, Maximize, Minimize, X, BookOpen, ChevronDown, ChevronUp, BookmarkPlus, LogIn, Library as LibraryIcon, Loader2 } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import { apiFetch, apiFetchUpload, getToken } from "../utils/apiClient";
@@ -22,7 +22,7 @@ interface BookRecord {
 
 export function NovelReader() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const navigate = useNavigate();
+  const { user } = useAuth();
   const bookIdParam = searchParams.get("bookId");
 
   const [chapters, setChapters] = useState<Chapter[]>([]);
