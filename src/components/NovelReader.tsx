@@ -1,12 +1,30 @@
-import React, { useState, useRef, useEffect } from "react";
-import { Upload, ChevronLeft, ChevronRight, Settings2, List, Maximize, Minimize, X, BookOpen, ChevronDown, ChevronUp } from "lucide-react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
+import { Upload, ChevronLeft, ChevronRight, Settings2, List, Maximize, Minimize, X, BookOpen, ChevronDown, ChevronUp, BookmarkPlus, LogIn, Library as LibraryIcon, Loader2 } from "lucide-react";
+import { useAuth } from "../contexts/AuthContext";
+import { apiFetch, apiFetchUpload, getToken } from "../utils/apiClient";
 
 interface Chapter {
   title: string;
   content: string;
 }
 
+interface BookRecord {
+  id: number;
+  file_name: string;
+  novel_name: string;
+  total_chapters: number;
+  current_chapter: number;
+  font_size: number;
+  reader_theme: string;
+}
+
 export function NovelReader() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const bookIdParam = searchParams.get("bookId");
+
   const [chapters, setChapters] = useState<Chapter[]>([]);
   const [currentChapter, setCurrentChapter] = useState(0);
   const [novelName, setNovelName] = useState<string>("");
@@ -22,44 +40,75 @@ export function NovelReader() {
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [showChapterList, setShowChapterList] = useState(false);
   const [showFormatInfo, setShowFormatInfo] = useState(false);
+
+  // 近期書籍選單
+  const [showRecentBooks, setShowRecentBooks] = useState(false);
+  const [recentBooks, setRecentBooks] = useState<BookRecord[]>([]);
+  const recentBtnRef = useRef<HTMLButtonElement>(null);
+  const [dropdownPos, setDropdownPos] = useState<{ top: number; left: number } | null>(null);
+
+  // 書籤/筆記面板
+  const [showBookmarkPanel, setShowBookmarkPanel] = useState(false);
+  const [bookmarkNote, setBookmarkNote] = useState("");
+
+  const [toast, setToast] = useState("");
+
+  // 後端書籍記錄
+  const [currentBookRecord, setCurrentBookRecord] = useState<BookRecord | null>(null);
+  const [isLoadingFile, setIsLoadingFile] = useState(false);
+
   const readerRef = useRef<HTMLDivElement>(null);
+  const { isAuthenticated } = useAuth();
 
-  useEffect(() => {
-    if (novelName && chapters.length > 0) {
-      localStorage.setItem(`novel_progress_${novelName}`, currentChapter.toString());
+  const showToast = useCallback((msg: string) => {
+    setToast(msg);
+    setTimeout(() => setToast(""), 2500);
+  }, []);
+
+  // 載入近期書籍
+  const fetchRecentBooks = useCallback(async () => {
+    if (!isAuthenticated) return;
+    try {
+      const books = await apiFetch<BookRecord[]>("/api/books");
+      setRecentBooks(books);
+    } catch {
+      // 忽略錯誤
     }
-  }, [novelName, currentChapter, chapters.length]);
+  }, [isAuthenticated]);
 
   useEffect(() => {
-    localStorage.setItem('novel_reader_font_size', fontSize.toString());
-  }, [fontSize]);
+    fetchRecentBooks();
+  }, [fetchRecentBooks]);
+
+  // 計算下拉位置 & 點擊外部關閉
+  const openRecentBooks = useCallback(() => {
+    if (recentBtnRef.current) {
+      const rect = recentBtnRef.current.getBoundingClientRect();
+      setDropdownPos({ top: rect.bottom + 6, left: rect.left });
+    }
+    setShowRecentBooks(true);
+  }, []);
 
   useEffect(() => {
-    localStorage.setItem('novel_reader_theme', readerTheme);
-  }, [readerTheme]);
-
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const text = event.target?.result as string;
-      parseText(text, file.name);
+    if (!showRecentBooks) return;
+    const handleClose = (e: MouseEvent) => {
+      // 關閉選單（portal 內的點擊由各 button 自己處理）
+      const target = e.target as HTMLElement;
+      if (!target.closest(".recentBooksDropdown") && !recentBtnRef.current?.contains(target)) {
+        setShowRecentBooks(false);
+      }
     };
-    reader.readAsText(file);
-  };
+    document.addEventListener("mousedown", handleClose);
+    return () => document.removeEventListener("mousedown", handleClose);
+  }, [showRecentBooks]);
 
-  const parseText = (text: string, name: string) => {
-    setNovelName(name);
-    // 簡單的章節分割邏輯：尋找 "第X章" 或 "Chapter X"
+  // 章節分割邏輯抽出
+  const splitTextIntoChapters = (text: string): Chapter[] => {
     const chapterRegex = /(?=第[一二三四五六七八九十百千零0-9]+[章回節]\s|Chapter\s+\d+)/g;
     const parts = text.split(chapterRegex);
 
-    let finalChapters: Chapter[] = [];
     if (parts.length === 1) {
-      // 若無章節格式，則整包當作第一章
-      finalChapters = [{ title: "開始閱讀", content: parts[0] }];
+      return [{ title: "開始閱讀", content: parts[0] }];
     } else {
       const parsedChapters = parts.map((part, index) => {
         const lines = part.trim().split('\n');
@@ -67,37 +116,182 @@ export function NovelReader() {
         const content = lines.slice(1).join('\n').trim();
         return { title, content };
       });
-      finalChapters = parsedChapters.filter(c => c.content.length > 0);
+      return parsedChapters.filter(c => c.content.length > 0);
     }
+  };
 
-    setChapters(finalChapters);
-    
-    const savedProgress = localStorage.getItem(`novel_progress_${name}`);
-    const initialChapter = savedProgress ? parseInt(savedProgress, 10) : 0;
-    setCurrentChapter(Math.min(initialChapter, Math.max(0, finalChapters.length - 1)));
+  // 當網址帶有 bookId 時，嘗試從後端下載檔案
+  const loadBookFromServer = useCallback(async (id: number) => {
+    if (!isAuthenticated) return;
+    setIsLoadingFile(true);
+    try {
+      // 先找出該本書的 metadata
+      let bookMeta = recentBooks.find(b => b.id === id);
+      if (!bookMeta) {
+        const books = await apiFetch<BookRecord[]>("/api/books");
+        setRecentBooks(books);
+        bookMeta = books.find(b => b.id === id);
+      }
+
+      if (!bookMeta) throw new Error("找不到該書籍紀錄");
+
+      // 下載檔案 (使用 fetch 帶上 token)
+      const token = getToken();
+      const res = await fetch(`/api/books/${id}/download`, {
+        headers: token ? { "Authorization": `Bearer ${token}` } : {},
+      });
+
+      if (!res.ok) throw new Error("下載檔案失敗");
+
+      const text = await res.text();
+      const finalChapters = splitTextIntoChapters(text);
+
+      setNovelName(bookMeta.file_name);
+      setChapters(finalChapters);
+      setCurrentBookRecord(bookMeta);
+
+      // 恢復設定
+      const urlChapterIndex = searchParams.get("chapterIndex");
+      if (urlChapterIndex !== null) {
+        setCurrentChapter(parseInt(urlChapterIndex, 10));
+      } else {
+        setCurrentChapter(bookMeta.current_chapter);
+      }
+      if (bookMeta.font_size) setFontSize(bookMeta.font_size);
+      if (bookMeta.reader_theme) setReaderTheme(bookMeta.reader_theme as any);
+
+    } catch (err) {
+      showToast("❌ 讀取雲端書籍失敗");
+    } finally {
+      setIsLoadingFile(false);
+    }
+  }, [isAuthenticated, recentBooks, showToast]);
+
+  useEffect(() => {
+    if (bookIdParam && isAuthenticated) {
+      loadBookFromServer(parseInt(bookIdParam, 10));
+    }
+  }, [bookIdParam, isAuthenticated]); // 避免 recentBooks 變更一直觸發
+
+  // 儲存進度到後端
+  const syncProgressToBackend = useCallback(async (bookRecord: BookRecord, chapterIdx: number) => {
+    if (!isAuthenticated || !bookRecord) return;
+    try {
+      await apiFetch(`/api/books/${bookRecord.id}`, {
+        method: "PUT",
+        body: JSON.stringify({ current_chapter: chapterIdx }),
+      });
+
+      // 更新 local state 的 recentBooks 讓選單保持最新
+      setRecentBooks(prev => prev.map(b => b.id === bookRecord.id ? { ...b, current_chapter: chapterIdx } : b));
+    } catch {
+      // 靜默失敗
+    }
+  }, [isAuthenticated]);
+
+  useEffect(() => {
+    if (novelName && chapters.length > 0 && !isLoadingFile) {
+      localStorage.setItem(`novel_progress_${novelName}`, currentChapter.toString());
+      if (currentBookRecord) {
+        syncProgressToBackend(currentBookRecord, currentChapter);
+      }
+    }
+  }, [novelName, currentChapter, chapters.length, currentBookRecord, syncProgressToBackend, isLoadingFile]);
+
+  useEffect(() => {
+    localStorage.setItem('novel_reader_font_size', fontSize.toString());
+    if (isAuthenticated && currentBookRecord) {
+      apiFetch(`/api/books/${currentBookRecord.id}`, {
+        method: "PUT",
+        body: JSON.stringify({ font_size: fontSize }),
+      }).catch(() => { });
+    }
+  }, [fontSize, isAuthenticated, currentBookRecord]);
+
+  useEffect(() => {
+    localStorage.setItem('novel_reader_theme', readerTheme);
+    if (isAuthenticated && currentBookRecord) {
+      apiFetch(`/api/books/${currentBookRecord.id}`, {
+        method: "PUT",
+        body: JSON.stringify({ reader_theme: readerTheme }),
+      }).catch(() => { });
+    }
+  }, [readerTheme, isAuthenticated, currentBookRecord]);
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsLoadingFile(true);
+    setSearchParams({}); // 清除網址上的 bookId，避免混淆
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      const text = event.target?.result as string;
+      const finalChapters = splitTextIntoChapters(text);
+      setNovelName(file.name);
+      setChapters(finalChapters);
+
+      if (isAuthenticated) {
+        try {
+          const formData = new FormData();
+          formData.append("file", file);
+          formData.append("total_chapters", finalChapters.length.toString());
+          formData.append("font_size", fontSize.toString());
+          formData.append("reader_theme", readerTheme);
+
+          const bookData = await apiFetchUpload<BookRecord>("/api/books/upload", formData);
+          setCurrentBookRecord(bookData);
+          setCurrentChapter(bookData.current_chapter);
+          if (bookData.font_size) setFontSize(bookData.font_size);
+          if (bookData.reader_theme) setReaderTheme(bookData.reader_theme as any);
+
+          showToast("✅ 書籍已上傳並同步至書庫");
+          fetchRecentBooks(); // 重新整理選單
+          setSearchParams({ bookId: bookData.id.toString() }); // 更新網址
+        } catch (err) {
+          showToast("❌ 上傳至雲端失敗，將以本地模式開啟");
+          setCurrentBookRecord(null);
+          const savedProgress = localStorage.getItem(`novel_progress_${file.name}`);
+          setCurrentChapter(savedProgress ? parseInt(savedProgress, 10) : 0);
+        }
+      } else {
+        const savedProgress = localStorage.getItem(`novel_progress_${file.name}`);
+        setCurrentChapter(savedProgress ? parseInt(savedProgress, 10) : 0);
+        setCurrentBookRecord(null);
+      }
+      setIsLoadingFile(false);
+    };
+    reader.readAsText(file);
   };
 
   const loadSampleNovel = async () => {
+    setSearchParams({}); // 清除網址
     try {
+      setIsLoadingFile(true);
       const response = await fetch(`${import.meta.env.BASE_URL}sample-novel.txt`);
       if (!response.ok) throw new Error('Network response was not ok');
       const text = await response.text();
-      parseText(text, 'sample-novel.txt');
+      const finalChapters = splitTextIntoChapters(text);
+      setNovelName('sample-novel.txt');
+      setChapters(finalChapters);
+      setCurrentBookRecord(null);
+
+      const savedProgress = localStorage.getItem(`novel_progress_sample-novel.txt`);
+      setCurrentChapter(savedProgress ? parseInt(savedProgress, 10) : 0);
     } catch (error) {
       console.error('Failed to load sample novel:', error);
       alert('無法載入範例小說。');
+    } finally {
+      setIsLoadingFile(false);
     }
   };
 
   useEffect(() => {
-    // 切換章節時回到頂部
-    if (readerRef.current) {
-      readerRef.current.scrollTop = 0;
-    }
+    if (readerRef.current) readerRef.current.scrollTop = 0;
   }, [currentChapter]);
 
   useEffect(() => {
-    // 開啟章節列表時，自動捲動到當前章節
     if (showChapterList) {
       setTimeout(() => {
         document.getElementById(`chapter-${currentChapter}`)?.scrollIntoView({ block: 'center', behavior: 'smooth' });
@@ -106,13 +300,10 @@ export function NovelReader() {
   }, [showChapterList, currentChapter]);
 
   useEffect(() => {
-    // 鍵盤快捷鍵：A / ← 上一章，D / → 下一章
     const handleKeyDown = (e: KeyboardEvent) => {
-      // 若焦點在輸入框或可編輯元素內，不觸發
       const tag = (e.target as HTMLElement)?.tagName;
       const isEditable = (e.target as HTMLElement)?.isContentEditable;
       if (tag === 'INPUT' || tag === 'TEXTAREA' || isEditable) return;
-
       if (chapters.length === 0) return;
 
       if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
@@ -123,10 +314,29 @@ export function NovelReader() {
         setCurrentChapter(c => Math.min(chapters.length - 1, c + 1));
       }
     };
-
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [chapters]);
+
+  const handleAddBookmark = async () => {
+    if (!currentBookRecord) return;
+    try {
+      await apiFetch(`/api/books/${currentBookRecord.id}/bookmarks`, {
+        method: "POST",
+        body: JSON.stringify({
+          chapter_index: currentChapter,
+          title: chapters[currentChapter]?.title || `第 ${currentChapter + 1} 章`,
+          note: bookmarkNote || null,
+        }),
+      });
+      showToast("✅ 書籤已新增");
+      setShowBookmarkPanel(false);
+      setBookmarkNote("");
+    } catch {
+      showToast("❌ 新增書籤失敗");
+    }
+  };
+
 
   const getThemeStyles = () => {
     switch (readerTheme) {
@@ -143,45 +353,41 @@ export function NovelReader() {
       <div className="container">
         <div className="sectionHead reveal is-visible">
           <h2 className="sectionTitle">小說閱讀器</h2>
-          <p className="sectionLead">上傳 TXT 檔案即可開始閱讀，支援自動章節分割與護眼模式。</p>
+          <p className="sectionLead">上傳 TXT 檔案即可開始閱讀。登入後將自動儲存檔案至您的專屬書庫！</p>
+
+          {!isAuthenticated && (
+            <div className="readerLoginHint">
+              <LogIn size={14} />
+              <span>登入帳號可跨裝置同步閱讀進度、新增書籤與筆記</span>
+            </div>
+          )}
+
           <div style={{ marginTop: "16px", marginBottom: "16px" }}>
-            <button 
-              className="btn btn--ghost btn--sm" 
+            <button
+              className="btn btn--ghost btn--sm"
               onClick={() => setShowFormatInfo(!showFormatInfo)}
               style={{ display: "inline-flex", alignItems: "center", padding: "8px 12px", background: "rgba(0,0,0,0.05)" }}
             >
               <span style={{ marginRight: "8px" }}>格式要求說明</span>
               {showFormatInfo ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
             </button>
-            
+
             {showFormatInfo && (
-              <div style={{ 
-                marginTop: "12px", 
-                padding: "16px", 
-                background: "rgba(0,0,0,0.03)", 
-                borderRadius: "8px",
-                fontSize: "14px",
-                lineHeight: "1.6",
-                textAlign: "left"
+              <div style={{
+                marginTop: "12px", padding: "16px", background: "rgba(0,0,0,0.03)",
+                borderRadius: "8px", fontSize: "14px", lineHeight: "1.6", textAlign: "left"
               }}>
                 <h4 style={{ marginTop: 0, marginBottom: "8px" }}>小說檔案格式要求：</h4>
                 <ul style={{ margin: 0, paddingLeft: "20px" }}>
                   <li>僅支援 <strong>.txt</strong> 純文字檔案格式。</li>
-                  <li>自動章節分割依賴於特定的標題格式，建議使用以下格式：
-                    <ul style={{ marginTop: "4px", marginBottom: "4px", paddingLeft: "20px", color: "var(--muted)" }}>
-                      <li><code>第X章</code> (例如：第一章、第十章、第12章)</li>
-                      <li><code>第X回</code>、<code>第X節</code></li>
-                      <li><code>Chapter X</code> (例如：Chapter 1, Chapter 20)</li>
-                    </ul>
-                  </li>
-                  <li>標題後請保留空格或直接換行，以確保正確識別。</li>
-                  <li>若檔案中未檢測到符合格式的章節標題，系統將把整份文件視為單一章節（「開始閱讀」）。</li>
+                  <li>自動章節分割依賴於特定的標題格式，例如：<code>第X章</code>、<code>第X回</code>、<code>Chapter X</code>。</li>
+                  <li>若未檢測到符合格式的章節標題，系統將把整份文件視為單一章節。</li>
                 </ul>
               </div>
             )}
           </div>
 
-          <div style={{ marginTop: "24px", display: "flex", justifyContent: "flex-start", gap: "12px", flexWrap: "wrap" }}>
+          <div style={{ marginTop: "24px", display: "flex", justifyContent: "flex-start", gap: "12px", flexWrap: "wrap", alignItems: "center" }}>
             <label className="btn btn--primary" style={{ cursor: "pointer", margin: 0, display: "inline-flex", alignItems: "center" }}>
               <Upload size={18} style={{ marginRight: "8px" }} />
               上傳 TXT 檔
@@ -191,25 +397,105 @@ export function NovelReader() {
               <BookOpen size={18} style={{ marginRight: "8px" }} />
               載入範例小說
             </button>
+
+            {/* 近期閱讀選單 (僅登入顯示) — 用 portal 渲染至 body 避免父層 stacking context 干擾 */}
+            {isAuthenticated && recentBooks.length > 0 && (
+              <>
+                <button
+                  ref={recentBtnRef}
+                  className="btn btn--ghost"
+                  onClick={() => showRecentBooks ? setShowRecentBooks(false) : openRecentBooks()}
+                  style={{ display: "inline-flex", alignItems: "center", borderColor: showRecentBooks ? "var(--line2)" : "var(--line)" }}
+                >
+                  <LibraryIcon size={18} style={{ marginRight: "8px" }} />
+                  近期閱讀
+                  <ChevronDown
+                    size={14}
+                    style={{ marginLeft: "6px", transition: "transform 0.25s", transform: showRecentBooks ? "rotate(180deg)" : "rotate(0deg)" }}
+                  />
+                </button>
+
+                {showRecentBooks && dropdownPos && createPortal(
+                  <div
+                    className="recentBooksDropdown"
+                    style={{
+                      position: "fixed",
+                      top: dropdownPos.top,
+                      left: dropdownPos.left,
+                      minWidth: "260px",
+                      borderRadius: "var(--radius2)",
+                      border: "1px solid var(--line)",
+                      background: "color-mix(in srgb, var(--card) 96%, transparent)",
+                      backdropFilter: "blur(16px)",
+                      boxShadow: "var(--shadow)",
+                      padding: "6px",
+                      zIndex: 99999,
+                      animation: "dropdownIn .2s var(--ease)",
+                    }}
+                  >
+                    <div style={{ fontSize: "11px", fontWeight: 600, color: "var(--muted)", padding: "4px 10px 6px", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                      最近閱讀的書籍
+                    </div>
+                    <div style={{ height: "1px", background: "var(--line)", margin: "0 0 6px" }} />
+                    {recentBooks.slice(0, 5).map((b, idx) => (
+                      <button
+                        key={b.id}
+                        className="userMenu__item"
+                        style={{ flexDirection: "column", alignItems: "flex-start", padding: "9px 12px", gap: "3px", borderRadius: "10px", width: "100%" }}
+                        onMouseDown={(e) => {
+                          e.stopPropagation();
+                          setShowRecentBooks(false);
+                          const targetId = b.id.toString();
+                          if (searchParams.get("bookId") === targetId) {
+                            loadBookFromServer(b.id);
+                          } else {
+                            setSearchParams({ bookId: targetId });
+                          }
+                        }}
+                      >
+                        <div style={{ display: "flex", alignItems: "center", gap: "8px", width: "100%" }}>
+                          <span style={{
+                            width: "22px", height: "22px", borderRadius: "6px", flexShrink: 0,
+                            background: `hsl(${(b.id * 47) % 360}, 65%, 55%)`,
+                            display: "grid", placeItems: "center", fontSize: "11px", fontWeight: 800, color: "#fff"
+                          }}>
+                            {idx + 1}
+                          </span>
+                          <span style={{ fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1, textAlign: "left" }}>
+                            {b.novel_name}
+                          </span>
+                        </div>
+                        <div style={{ display: "flex", alignItems: "center", gap: "6px", paddingLeft: "30px" }}>
+                          <span style={{ fontSize: "11px", color: "var(--muted)" }}>
+                            第 {b.current_chapter + 1} 章 / 共 {b.total_chapters} 章
+                          </span>
+                          {b.total_chapters > 0 && (
+                            <span style={{
+                              fontSize: "10px", padding: "1px 6px", borderRadius: "999px",
+                              background: `hsl(${Math.round((b.current_chapter / b.total_chapters) * 120)}, 60%, 50%)`,
+                              color: "#fff", fontWeight: 700
+                            }}>
+                              {Math.round((b.current_chapter / b.total_chapters) * 100)}%
+                            </span>
+                          )}
+                        </div>
+                      </button>
+                    ))}
+                  </div>,
+                  document.body
+                )}
+              </>
+            )}
           </div>
         </div>
 
         <div className="card reveal is-visible" style={isFullScreen ? {
-          position: "fixed",
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          zIndex: 9998,
-          margin: 0,
-          borderRadius: 0,
-          display: "flex",
-          flexDirection: "column",
-          height: "100vh",
-          overflowY: "auto",
-          backgroundColor: getThemeStyles().backgroundColor,
-          color: getThemeStyles().color,
+          position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+          zIndex: 9998, margin: 0, borderRadius: 0, display: "flex",
+          flexDirection: "column", height: "100vh", overflowY: "auto",
+          backgroundColor: getThemeStyles().backgroundColor, color: getThemeStyles().color,
         } : { position: "relative", display: "flex", flexDirection: "column" }}>
+
           {/* Toolbar */}
           <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", marginBottom: "16px", flexWrap: "wrap", gap: "12px" }}>
             <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
@@ -223,6 +509,13 @@ export function NovelReader() {
                   <List size={18} />
                 </button>
               )}
+
+              {isAuthenticated && currentBookRecord && chapters.length > 0 && (
+                <button className="btn btn--ghost btn--sm" onClick={() => { setShowBookmarkPanel(!showBookmarkPanel); }} title="加入書籤">
+                  <BookmarkPlus size={18} />
+                </button>
+              )}
+
               <button className="btn btn--ghost btn--sm" onClick={() => setShowSettings(!showSettings)} title="閱讀設定">
                 <Settings2 size={18} />
               </button>
@@ -232,7 +525,22 @@ export function NovelReader() {
             </div>
           </div>
 
-          {/* Settings Panel */}
+          {/* 面板們... (書籤/筆記/設定) */}
+          {showBookmarkPanel && (
+            <div className="callout readerPanel" style={{ marginBottom: "16px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
+                <span className="callout__title" style={{ fontSize: "14px", fontWeight: 700 }}>
+                  <BookmarkPlus size={16} style={{ verticalAlign: "middle", marginRight: "6px" }} />
+                  為「{chapters[currentChapter]?.title}」加入書籤
+                </span>
+                <button className="btn btn--ghost btn--sm" onClick={() => setShowBookmarkPanel(false)}><X size={14} /></button>
+              </div>
+              <textarea placeholder="備註（選填）" value={bookmarkNote} onChange={(e) => setBookmarkNote(e.target.value)} rows={2} style={{ width: "100%", marginBottom: "10px" }} />
+              <button className="btn btn--primary btn--sm" onClick={handleAddBookmark}><BookmarkPlus size={14} /> 加入書籤</button>
+            </div>
+          )}
+
+
           {showSettings && (
             <div className="callout" style={{ marginBottom: "16px", display: "flex", gap: "20px", flexWrap: "wrap" }}>
               <div>
@@ -270,7 +578,12 @@ export function NovelReader() {
               transition: "background-color 0.3s, color 0.3s"
             }}
           >
-            {chapters.length === 0 ? (
+            {isLoadingFile ? (
+              <div style={{ display: "flex", flexDirection: "column", height: "100%", alignItems: "center", justifyContent: "center", color: "inherit", opacity: 0.6, gap: "10px" }}>
+                <Loader2 size={32} className="spinIcon" />
+                <span>讀取檔案中...</span>
+              </div>
+            ) : chapters.length === 0 ? (
               <div style={{ display: "flex", height: "100%", alignItems: "center", justifyContent: "center", color: "inherit", opacity: 0.6 }}>
                 請上傳小說檔案以開始閱讀...
               </div>
@@ -287,21 +600,12 @@ export function NovelReader() {
           </div>
 
           {/* Pagination */}
-          {chapters.length > 0 && (
+          {!isLoadingFile && chapters.length > 0 && (
             <div style={{ display: "flex", justifyContent: "space-between", marginTop: "16px" }}>
-              <button
-                className="btn btn--ghost"
-                disabled={currentChapter === 0}
-                onClick={() => setCurrentChapter(c => Math.max(0, c - 1))}
-              >
+              <button className="btn btn--ghost" disabled={currentChapter === 0} onClick={() => setCurrentChapter(c => Math.max(0, c - 1))}>
                 <ChevronLeft size={18} /> 上一章
               </button>
-
-              <button
-                className="btn btn--ghost"
-                disabled={currentChapter === chapters.length - 1}
-                onClick={() => setCurrentChapter(c => Math.min(chapters.length - 1, c + 1))}
-              >
+              <button className="btn btn--ghost" disabled={currentChapter === chapters.length - 1} onClick={() => setCurrentChapter(c => Math.min(chapters.length - 1, c + 1))}>
                 下一章 <ChevronRight size={18} />
               </button>
             </div>
@@ -311,52 +615,18 @@ export function NovelReader() {
         {/* Chapter List Sidebar */}
         {showChapterList && (
           <>
-            <div
-              style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "rgba(0,0,0,0.5)", zIndex: 9999 }}
-              onClick={() => setShowChapterList(false)}
-            />
-            <div
-              style={{
-                position: "fixed", top: 0, right: 0, bottom: 0, width: "300px", maxWidth: "80vw",
-                ...getThemeStyles(),
-                zIndex: 10000, padding: "20px",
-                boxShadow: "-2px 0 10px rgba(0,0,0,0.2)",
-                transition: "transform 0.3s ease",
-                display: "flex", flexDirection: "column"
-              }}
-            >
+            <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "rgba(0,0,0,0.5)", zIndex: 9999 }} onClick={() => setShowChapterList(false)} />
+            <div style={{ position: "fixed", top: 0, right: 0, bottom: 0, width: "300px", maxWidth: "80vw", ...getThemeStyles(), zIndex: 10000, padding: "20px", boxShadow: "-2px 0 10px rgba(0,0,0,0.2)", display: "flex", flexDirection: "column" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
                 <h3 style={{ margin: 0 }}>章節列表</h3>
-                <button className="btn btn--ghost btn--sm" onClick={() => setShowChapterList(false)}>
-                  <X size={20} />
-                </button>
+                <button className="btn btn--ghost btn--sm" onClick={() => setShowChapterList(false)}><X size={20} /></button>
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: "8px", overflowY: "auto", flex: 1, paddingRight: "8px" }}>
                 {chapters.map((chap, idx) => (
                   <button
-                    key={idx}
-                    id={`chapter-${idx}`}
-                    onClick={() => {
-                      setCurrentChapter(idx);
-                      setShowChapterList(false);
-                    }}
-                    style={{
-                      textAlign: "left",
-                      padding: "10px 14px",
-                      borderRadius: "6px",
-                      border: "none",
-                      background: currentChapter === idx ? (readerTheme === 'dark' ? '#333' : 'rgba(0,0,0,0.08)') : 'transparent',
-                      color: "inherit",
-                      cursor: "pointer",
-                      fontWeight: currentChapter === idx ? "bold" : "normal",
-                      transition: "background 0.2s"
-                    }}
-                    onMouseEnter={(e) => {
-                      if (currentChapter !== idx) e.currentTarget.style.background = readerTheme === 'dark' ? '#2a2a2a' : 'rgba(0,0,0,0.04)';
-                    }}
-                    onMouseLeave={(e) => {
-                      if (currentChapter !== idx) e.currentTarget.style.background = 'transparent';
-                    }}
+                    key={idx} id={`chapter-${idx}`}
+                    onClick={() => { setCurrentChapter(idx); setShowChapterList(false); }}
+                    style={{ textAlign: "left", padding: "10px 14px", borderRadius: "6px", border: "none", background: currentChapter === idx ? (readerTheme === 'dark' ? '#333' : 'rgba(0,0,0,0.08)') : 'transparent', color: "inherit", cursor: "pointer", fontWeight: currentChapter === idx ? "bold" : "normal" }}
                   >
                     {chap.title}
                   </button>
@@ -365,6 +635,9 @@ export function NovelReader() {
             </div>
           </>
         )}
+
+        {/* Toast 通知 */}
+        {toast && <div className="toast readerToast">{toast}</div>}
       </div>
     </section>
   );

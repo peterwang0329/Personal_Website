@@ -1,10 +1,10 @@
-# 個人作品集與互動體驗網站 (React + TypeScript + Vite)
+# 個人作品集與互動體驗網站 (React + TypeScript + Vite + FastAPI)
 
-這是一個以 React 和 TypeScript 建立的個人網站專案，採用了現代化的前端技術棧，並透過 Vite 提供極速的開發與建置體驗。
+這是一個結合前端靜態展示與全端動態互動功能的個人網站專案。前端採用現代化的 React 和 TypeScript 技術棧，並透過 Vite 提供極速的開發與建置體驗；後端則採用輕量高效的 Python FastAPI 搭配 SQLite 資料庫，提供使用者認證與資料持久化服務。
 
 ## 專案特色
 
-本專案結合了靜態展示與動態互動功能，主要包含以下四大區塊：
+本專案主要包含以下五大區塊：
 
 1. **網站介紹 (Hero Section)**
    展示個人基本資訊、目前的求職狀態、動態的職稱輪播，以及社群平台連結。
@@ -12,118 +12,102 @@
 2. **個人簡介 (Profile Section)**
    詳細介紹「關於我」、精選的技能雷達圖、開發工具習慣，並整合了過去的作品集與學習經歷。
 
-3. **小說閱讀器 (Novel Reader)**
+3. **使用者系統與個人書庫 (User System & Library)**
+   - 內建帳號註冊與登入功能，並以 JWT (JSON Web Token) 進行安全認證。
+   - **我的書庫**：專屬已登入使用者的頁面，可管理上傳過的書籍，直觀檢視各本書的閱讀進度與最後閱讀時間。
+   - **書籤管理**：可瀏覽所有新增的書籤，支援編輯與刪除功能。
+
+4. **小說閱讀器 (Novel Reader)**
    - 支援本機上傳 `.txt` 格式的純文字檔。
    - 透過正則表達式自動辨識「第 X 章」或「Chapter X」進行章節的自動分割與分頁。
-   - 具備字體大小調整功能。
-   - 提供三種閱讀主題（明亮、護眼、深色）自由切換。
+   - 提供五種閱讀主題自由切換及字體大小調整功能。
+   - **雲端同步**：若已登入，閱讀進度、偏好設定與書籤皆會即時同步至後端資料庫，實現跨裝置無縫閱讀。
+   - **離線備援**：若未登入，仍可透過瀏覽器的 `localStorage` 儲存進度與設定。
 
-4. **打磚塊小遊戲 (Brick Breaker)**
+5. **打磚塊小遊戲 (Brick Breaker)**
    - 內建基於 HTML5 Canvas 搭配 `requestAnimationFrame` 開發的經典打磚塊遊戲。
    - 具備球體與磚塊的碰撞偵測、分數計算與生命值機制。
    - 支援使用鍵盤的左右方向鍵進行流暢遊玩。
 
 ## 技術架構
 
-- **前端框架**：[React](https://react.dev/)
-- **開發語言**：[TypeScript](https://www.typescriptlang.org/)，提供嚴謹的型別檢查，減少開發錯誤。
-- **建置工具**：[Vite](https://vitejs.dev/)，提供模組熱替換 (HMR) 以及極快的本地伺服器啟動速度。
-- **樣式設計**：採用純 CSS (Vanilla CSS) 搭配 CSS 變數，實現了高質感的深淺色模式 (Dark / Light Mode) 切換與響應式排版 (RWD)。
-- **圖示庫**：使用 [Lucide React](https://lucide.dev/) 呈現簡潔俐落的 UI 元素。
+### 前端
+- **框架**：[React](https://react.dev/)
+- **語言**：[TypeScript](https://www.typescriptlang.org/)
+- **建置工具**：[Vite](https://vitejs.dev/)，並配置 Proxy 轉發 API 請求。
+- **樣式設計**：純 CSS (Vanilla CSS) 搭配 CSS 變數，實現 Glassmorphism (毛玻璃) 質感與深淺色模式。
+- **狀態與路由**：使用 React Context 管理全域認證狀態，使用 React Router DOM 處理分頁。
+- **圖示庫**：[Lucide React](https://lucide.dev/)
+
+### 後端
+- **框架**：[FastAPI](https://fastapi.tiangolo.com/)，提供高效能且具備自動文件 (Swagger UI) 的 API。
+- **資料庫**：[SQLite](https://www.sqlite.org/index.html) (開發用輕量資料庫)，搭配 [SQLAlchemy](https://www.sqlalchemy.org/) ORM 操作資料。
+- **資料驗證**：[Pydantic](https://docs.pydantic.dev/) 用於請求與回應的資料格式驗證。
+- **安全性**：使用 `passlib` 進行 bcrypt 密碼雜湊，`python-jose` 處理 JWT 簽發與驗證。
+
+---
 
 ## 如何在本地端執行
 
-1. **安裝依賴套件**
-   請在專案根目錄下（也就是這個 `README.md` 所在的資料夾）打開終端機，執行以下指令安裝套件：
-   ```bash
-   npm install
-   ```
+由於專案包含前後端，啟動時需要開啟**兩個**獨立的終端機視窗。
 
-2. **啟動開發伺服器**
-   ```bash
-   npm run dev
-   ```
-   啟動後，請在瀏覽器開啟終端機所顯示的位址（通常為 `http://localhost:5173/`），即可預覽網站。
+### 步驟 1：啟動後端 API 伺服器
+請在專案根目錄下開啟第一個終端機：
+```bash
+# 進入後端資料夾
+cd server
 
-3. **建置生產版本**
-   ```bash
-   npm run build
-   ```
-   此指令會先執行 TypeScript 型別檢查 (`tsc`)，確保沒有型別錯誤後，將專案打包優化至 `dist` 資料夾中。
+# (選用) 建立並啟動虛擬環境 (Windows 範例)
+python -m venv venv
+venv\Scripts\activate
 
-## 專案結構簡介
+# 安裝 Python 依賴套件
+pip install -r requirements.txt
 
-- `src/components/`：存放所有的 React 獨立元件（例如：導覽列 Navbar、遊戲區塊 BrickBreaker、閱讀器 NovelReader 等）。
-- `src/hooks/`：存放自訂的 React Hooks，例如用來控制深淺色模式的 `useTheme.ts`。
-- `src/data/`：存放網站的靜態資料設定檔 (`profile.ts`)，所有個人資訊皆集中於此，方便未來快速修改文字內容。
-- `src/index.css`：全域樣式檔，包含定義深淺色主題的 CSS 變數與所有的版面設計細節。
-- `legacy/`：存放改版前的純 HTML/CSS/JS 舊版原始碼，作為備份與設計參考。
+# 啟動 FastAPI 伺服器
+python -m uvicorn main:app --reload
+```
+後端伺服器啟動後，將運行於 `http://localhost:8000`。您可以造訪 `http://localhost:8000/docs` 查看自動生成的 API 測試文件。
 
----
-*備註：本專案的基礎架構由 Vite 官方的 `@vitejs/plugin-react` 模板建立，並已預設配置 ESLint 協助維持程式碼品質。*
+### 步驟 2：啟動前端開發伺服器
+請在專案根目錄下開啟第二個終端機：
+```bash
+# 安裝 Node 依賴套件
+npm install
 
-# 專案檔案結構與功能說明
+# 啟動 Vite 開發伺服器
+npm run dev
+```
+啟動後，開啟瀏覽器造訪終端機顯示的位址 (通常為 `http://localhost:5173/`) 即可預覽網站。
 
-這份文件旨在幫助您了解本專案各個檔案的功能與用途，方便您日後進行維護與修改。
-
-## 📁 核心架構檔案
-
-### [main.tsx](file:///c:/Users/peter/Desktop/program/vide-coding/src/main.tsx)
-- **功能**：應用程式的進入點。
-- **說明**：負責將 React 根元件掛載到 HTML 的 `#root` 節點上，並配置了 `BrowserRouter` 以啟用分頁路由功能。
-
-### [App.tsx](file:///c:/Users/peter/Desktop/program/vide-coding/src/App.tsx)
-- **功能**：主程式佈局與路由設定。
-- **說明**：定義了網站的整體架構（如導覽列與頁尾），並使用 `Routes` 與 `Route` 設定各個頁面（首頁、簡介、閱讀器、遊戲）對應的路徑。
-
-### [index.css](file:///c:/Users/peter/Desktop/program/vide-coding/src/index.css)
-- **功能**：全域樣式設定。
-- **說明**：包含了 CSS 變數（顏色、間距等）、基礎排版、動畫效果以及深/淺色模式的樣式定義。
+*註：前端的 `vite.config.ts` 已設定 Proxy，所有 `/api` 開頭的請求會自動轉發至後端伺服器，無需處理 CORS 問題。*
 
 ---
 
-## 📁 資料與邏輯層
+## 專案檔案結構與功能說明
 
-### [src/data/profile.ts](file:///c:/Users/peter/Desktop/program/vide-coding/src/data/profile.ts)
-- **功能**：**個人資訊中心（最常修改的地方）**。
-- **說明**：存放網站上顯示的所有文字內容，包括姓名、自介、技能、作品集與經歷。已加上詳細註解。
+### 📁 核心架構
+- **`src/main.tsx` & `src/App.tsx`**：React 進入點與主程式佈局，配置了路由機制與 `AuthProvider` 認證狀態。
+- **`src/index.css`**：全域樣式設定，包含所有元件的設計細節、動畫效果與深淺色主題變數。
+- **`vite.config.ts`**：Vite 建置設定，包含對後端的 API Proxy 配置。
 
-### [src/hooks/useTheme.ts](file:///c:/Users/peter/Desktop/program/vide-coding/src/hooks/useTheme.ts)
-- **功能**：主題管理 Hook。
-- **說明**：處理深色模式與淺色模式的切換邏輯，並將偏好設定儲存在瀏覽器的 `localStorage` 中。
+### 📁 後端服務 (`server/`)
+- **`main.py`**：FastAPI 應用程式入口，掛載路由與初始化資料表。
+- **`database.py` & `models.py`**：定義 SQLite 連線及 User, Book, Bookmark 三張資料表的 ORM 結構。
+- **`schemas.py`**：定義 API 請求與回應的 Pydantic 模型，包含帳號密碼的格式驗證。
+- **`auth.py`**：處理密碼雜湊與 JWT Token 的簽發、驗證邏輯。
+- **`routers/`**：依照功能分類的 API 路由 (認證 `auth_router.py`、書籍 `books_router.py`)。
 
----
+### 📁 前端元件 (`src/components/`)
+- **`LoginPage.tsx`**：整合登入與註冊功能的毛玻璃質感表單。
+- **`Library.tsx`**：專屬已登入使用者的「我的書庫」頁面，展示書籍進度條與書籤。
+- **`NovelReader.tsx`**：支援 TXT 解析的小說閱讀器。整合了後端 API，可即時同步閱讀進度，並提供新增書籤的面板。
+- **`Navbar.tsx`**：頂部導覽列，整合了使用者狀態顯示與下拉選單。
+- **`Hero.tsx` & `Profile.tsx`**：首頁與個人簡介展示區塊。
+- **`BrickBreaker.tsx`**：Canvas 打磚塊遊戲。
 
-## 📁 網頁元件 (src/components/)
-
-### [Navbar.tsx](file:///c:/Users/peter/Desktop/program/vide-coding/src/components/Navbar.tsx)
-- **功能**：頂部導覽列。
-- **說明**：包含品牌標誌、分頁連結、主題切換按鈕，以及行動版的選單切換功能。
-
-### [Footer.tsx](file:///c:/Users/peter/Desktop/program/vide-coding/src/components/Footer.tsx)
-- **功能**：頁尾。
-- **說明**：顯示版權資訊、目前的年份，以及「回頂部」的按鈕。
-
-### [Hero.tsx](file:///c:/Users/peter/Desktop/program/vide-coding/src/components/Hero.tsx)
-- **功能**：首頁「網站介紹」區塊。
-- **說明**：網頁的第一印象，包含動態職稱輪播、個人卡片與聯絡方式。
-
-### [Profile.tsx](file:///c:/Users/peter/Desktop/program/vide-coding/src/components/Profile.tsx)
-- **功能**：個人簡介頁面。
-- **說明**：整合了「關於我」、技能進度條、工具習慣、作品清單與學習經歷。
-
-### [NovelReader.tsx](file:///c:/Users/peter/Desktop/program/vide-coding/src/components/NovelReader.tsx)
-- **功能**：小說閱讀器。
-- **說明**：實作 TXT 檔案上傳、自動辨識章節、調整字體大小與切換閱讀主題（護眼、深色）的功能。
-
-### [BrickBreaker.tsx](file:///c:/Users/peter/Desktop/program/vide-coding/src/components/BrickBreaker.tsx)
-- **功能**：打磚塊小遊戲。
-- **說明**：使用 HTML5 Canvas 實作的遊戲邏輯。包含球的運動、板子控制、磚塊碰撞偵測與計分機制。
-
----
-
-## 📁 其他資料夾
-
-- **legacy/**：存放改版前的舊版 HTML/CSS/JS 檔案，作為參考與備份。
-- **dist/**：執行 `npm run build` 後生成的生產版本檔案，可用於部署。
-- **node_modules/**：存放所有安裝的第三方套件（如 React, Lucide React, React Router）。
+### 📁 資料與邏輯層
+- **`src/contexts/AuthContext.tsx`**：全域認證狀態管理中心，處理登入/註冊邏輯與 Token 狀態維持。
+- **`src/utils/apiClient.ts`**：封裝的 `fetch` 請求工具，會自動在 Header 帶上 JWT Token 並統一處理 401 錯誤。
+- **`src/data/profile.ts`**：網站的靜態資料設定檔，集中管理個人簡歷文字。
+- **`src/hooks/useTheme.ts`**：處理深色模式切換邏輯。

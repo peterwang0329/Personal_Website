@@ -22,3 +22,11 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Python 後端
+server/__pycache__/
+server/routers/__pycache__/
+server/*.db
+server/.env
+server/uploads/
+server/venv/
