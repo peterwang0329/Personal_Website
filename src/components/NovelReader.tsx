@@ -22,7 +22,7 @@ interface BookRecord {
 
 export function NovelReader() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const { user } = useAuth();
+
   const bookIdParam = searchParams.get("bookId");
 
   const [chapters, setChapters] = useState<Chapter[]>([]);
