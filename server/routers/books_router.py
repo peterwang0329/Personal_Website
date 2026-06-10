@@ -11,15 +11,12 @@ from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
 from database import get_db
-from models import User, Book
+from models import User, Book, BookContent
+from fastapi.responses import FileResponse, Response
 from schemas import BookCreate, BookUpdate, BookResponse
 from auth import get_current_user
 
 router = APIRouter(prefix="/api/books", tags=["書籍"])
-
-UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "..", "uploads", "books")
-os.makedirs(UPLOAD_DIR, exist_ok=True)
-
 
 @router.get("", response_model=list[BookResponse])
 def list_books(
@@ -58,25 +55,21 @@ async def upload_book(
         .first()
     )
 
-    # 儲存檔案
-    file_id = str(uuid.uuid4())
-    file_path = os.path.join(UPLOAD_DIR, f"{current_user.id}_{file_id}.txt")
-    
-    content = await file.read()
-    with open(file_path, "wb") as f:
-        f.write(content)
+    content_bytes = await file.read()
+    content_text = content_bytes.decode('utf-8', errors='ignore')
 
     if existing:
-        # 若之前有檔案，可選擇刪除舊檔 (此處簡化處理，直接更新路徑)
-        if os.path.exists(existing.file_path):
-            try:
-                os.remove(existing.file_path)
-            except Exception:
-                pass
-        
-        existing.file_path = file_path
         existing.total_chapters = total_chapters
         existing.last_read_at = datetime.now(timezone.utc)
+        
+        # 更新內容
+        book_content = db.query(BookContent).filter(BookContent.book_id == existing.id).first()
+        if book_content:
+            book_content.content = content_text
+        else:
+            new_content = BookContent(book_id=existing.id, content=content_text)
+            db.add(new_content)
+            
         db.commit()
         db.refresh(existing)
         return existing
@@ -84,7 +77,7 @@ async def upload_book(
     book = Book(
         user_id=current_user.id,
         file_name=file.filename,
-        file_path=file_path,
+        file_path="db_storage", # 不再使用實體路徑
         novel_name=novel_name,
         total_chapters=total_chapters,
         current_chapter=0,
@@ -92,6 +85,11 @@ async def upload_book(
         reader_theme=reader_theme,
     )
     db.add(book)
+    db.flush() # 取得 book.id
+    
+    new_content = BookContent(book_id=book.id, content=content_text)
+    db.add(new_content)
+    
     db.commit()
     db.refresh(book)
     return book
@@ -103,7 +101,6 @@ def create_book(
     db: Session = Depends(get_db)
 ):
     """(保留給舊版相容或沒有實體檔案的情況) 新增一本書籍記錄"""
-    # 這裡可以沿用之前的邏輯，但為了避免空路徑報錯，我們給個預設空字串或調整模型
     raise HTTPException(status_code=400, detail="請使用 /upload API 上傳檔案")
 
 @router.get("/{book_id}/download")
@@ -114,9 +111,14 @@ def download_book(
 ):
     """下載/讀取書籍檔案"""
     book = db.query(Book).filter(Book.id == book_id, Book.user_id == current_user.id).first()
-    if not book or not os.path.exists(book.file_path):
+    if not book:
         raise HTTPException(status_code=404, detail="找不到檔案")
-    return FileResponse(book.file_path, media_type="text/plain", filename=book.file_name)
+        
+    book_content = db.query(BookContent).filter(BookContent.book_id == book.id).first()
+    if not book_content:
+        raise HTTPException(status_code=404, detail="找不到檔案內容")
+        
+    return Response(content=book_content.content, media_type="text/plain")
 
 
 @router.put("/{book_id}", response_model=BookResponse)
@@ -162,13 +164,6 @@ def delete_book(
     )
     if not book:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="找不到此書籍")
-
-    # 刪除實體檔案
-    if book.file_path and os.path.exists(book.file_path):
-        try:
-            os.remove(book.file_path)
-        except Exception:
-            pass
 
     db.delete(book)
     db.commit()

@@ -60,3 +60,15 @@ class Bookmark(Base):
     # 關聯
     book = relationship("Book", back_populates="bookmarks")
 
+
+class BookContent(Base):
+    """書籍內容資料表（專為 Render ephemeral disk 設計，將檔案存於資料庫）"""
+    __tablename__ = "book_contents"
+
+    id = Column(Integer, primary_key=True, index=True)
+    book_id = Column(Integer, ForeignKey("books.id", ondelete="CASCADE"), unique=True, nullable=False)
+    content = Column(Text, nullable=False)
+
+    # 關聯
+    book = relationship("Book", backref="content")
+
