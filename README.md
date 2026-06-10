@@ -2,6 +2,10 @@
 
 這是一個結合前端靜態展示與全端動態互動功能的個人網站專案。前端採用現代化的 React 和 TypeScript 技術棧，並透過 Vite 提供極速的開發與建置體驗；後端則採用輕量高效的 Python FastAPI 搭配 SQLite 資料庫，提供使用者認證與資料持久化服務。
 
+目前已上架至Render
+
+網站網址:https://personal-website-static-pmb2.onrender.com/
+
 ## 專案特色
 
 本專案主要包含以下五大區塊：
