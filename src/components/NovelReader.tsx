@@ -137,7 +137,8 @@ export function NovelReader() {
 
       // 下載檔案 (使用 fetch 帶上 token)
       const token = getToken();
-      const res = await fetch(`/api/books/${id}/download`, {
+      const baseUrl = import.meta.env.VITE_API_URL || "";
+      const res = await fetch(`${baseUrl}/api/books/${id}/download`, {
         headers: token ? { "Authorization": `Bearer ${token}` } : {},
       });
 
