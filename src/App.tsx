@@ -10,6 +10,7 @@ import { BrickBreaker } from "./components/BrickBreaker";
 import { LoginPage } from "./components/LoginPage";
 import { Library } from "./components/Library";
 import { AdminPanel } from "./components/AdminPanel";
+import { ProjectShowcase } from "./components/ProjectShowcase";
 
 function App() {
   const { theme, toggleTheme } = useTheme();
@@ -28,6 +29,7 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/library" element={<Library />} />
           <Route path="/admin" element={<AdminPanel />} />
+          <Route path="/showcase" element={<ProjectShowcase />} />
         </Routes>
       </main>
 

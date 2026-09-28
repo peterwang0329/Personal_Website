@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AI 即時互動導覽系統</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="#top" aria-label="AI 即時互動導覽系統首頁">
+        <img src="assets/report-media/report-07.png" alt="國立金門大學標誌" />
+        <span>AI 即時互動導覽系統</span>
+      </a>
+      <nav aria-label="主要導覽">
+        <a href="#about">專題簡介</a>
+        <a href="#flow">系統流程</a>
+        <a href="#video">展示影片</a>
+        <a href="#results">成果亮點</a>
+      </nav>
+    </header>
+
+    <main id="top">
+      <section class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">國立金門大學資訊工程學系專題製作</p>
+          <h1>AI 即時互動導覽系統</h1>
+          <p>
+            以胡璉將軍為核心導覽角色，結合語音辨識、檢索增強生成、
+            大型語言模型與語音合成，讓使用者能用自然對話認識金門歷史與戰地文化。
+          </p>
+          <div class="hero-actions">
+            <a class="button primary" href="#about">了解專題</a>
+            <a class="button ghost" href="#tech">查看技術</a>
+          </div>
+        </div>
+        <figure class="hero-visual">
+          <img src="assets/report-media/report-01.png" alt="AI 即時互動導覽系統介面截圖" />
+          <figcaption>系統以語音問答方式提供即時導覽回應</figcaption>
+        </figure>
+      </section>
+
+      <section class="intro band" id="about">
+        <div class="section-heading">
+          <p class="eyebrow">Project Overview</p>
+          <h2>把靜態史料變成可互動的導覽體驗</h2>
+        </div>
+        <div class="intro-grid">
+          <div>
+            <p>
+              傳統導覽多半依賴解說牌、紙本資料或固定影片，資訊傳遞較單向，也較難吸引習慣互動式內容的年輕族群。本專題希望透過 AI 技術，降低導覽人力負擔，同時提升文化介紹的趣味性與沉浸感。
+            </p>
+            <p>
+              系統以被稱為「金門現代恩主公」的胡璉將軍作為虛擬導覽角色，讓使用者可以提出問題，並獲得具備史料依據的語音回覆。
+            </p>
+          </div>
+          <div class="quick-facts" aria-label="專題資訊">
+            <div>
+              <span>導覽主題</span>
+              <strong>金門歷史與胡璉將軍</strong>
+            </div>
+            <div>
+              <span>互動方式</span>
+              <strong>語音問答</strong>
+            </div>
+            <div>
+              <span>部署方式</span>
+              <strong>邊緣 AI 本地化運算</strong>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="feature-strip">
+        <article>
+          <span>01</span>
+          <h3>聽懂問題</h3>
+          <p>透過 Faster-Whisper 將使用者語音轉換為文字，作為後續查詢與回覆生成的輸入。</p>
+        </article>
+        <article>
+          <span>02</span>
+          <h3>查找史料</h3>
+          <p>使用 Multilingual E5 與 Qdrant 建立向量資料庫，快速找出和問題最相關的歷史內容。</p>
+        </article>
+        <article>
+          <span>03</span>
+          <h3>生成回答</h3>
+          <p>結合 Hybrid RAG 與大型語言模型，讓回答更貼近史料脈絡並降低錯誤生成。</p>
+        </article>
+        <article>
+          <span>04</span>
+          <h3>自然回覆</h3>
+          <p>透過 GPT-SoVITS 將文字轉成語音，營造與歷史人物對話的沉浸式感受。</p>
+        </article>
+      </section>
+
+      <section class="split-section" id="flow">
+        <div class="section-heading">
+          <p class="eyebrow">System Flow</p>
+          <h2>從提問到語音回覆的完整閉環</h2>
+          <p>
+            使用者說出問題後，系統會先完成語音辨識，再進入知識檢索與模型生成，最後以合成語音播放回答。
+          </p>
+        </div>
+        <figure class="image-panel">
+          <img src="assets/report-media/report-08.png" alt="AI 導覽系統軟硬體流程圖" />
+        </figure>
+      </section>
+
+      <section class="video-section band" id="video">
+        <div class="section-heading">
+          <p class="eyebrow">Demo Video</p>
+          <h2>成果展示影片</h2>
+          <p>
+            透過實際展示影片，可以快速了解 AI 即時互動導覽系統的操作畫面與語音互動成果。
+          </p>
+        </div>
+        <div class="video-frame">
+          <video controls preload="metadata" poster="assets/report-media/report-09.png">
+            <source src="../4.成果展示影音檔/HuLianTrue.mp4" type="video/mp4" />
+            您的瀏覽器不支援影片播放，請直接開啟 4.成果展示影音檔/HuLianTrue.mp4。
+          </video>
+        </div>
+      </section>
+
+      <section class="tech band" id="tech">
+        <div class="section-heading">
+          <p class="eyebrow">Core Technology</p>
+          <h2>核心技術模組</h2>
+        </div>
+        <div class="tech-grid">
+          <article>
+            <h3>ASUS ASCENT GX10</h3>
+            <p>作為邊緣 AI 運算平台，支援本地推論，讓系統在無外部網路時仍可運作。</p>
+          </article>
+          <article>
+            <h3>Faster-Whisper STT</h3>
+            <p>負責語音轉文字，兼顧辨識效率與低延遲，讓互動更即時。</p>
+          </article>
+          <article>
+            <h3>Qdrant + E5</h3>
+            <p>將胡璉將軍相關文本轉為語意向量，提供精準的歷史資料檢索。</p>
+          </article>
+          <article>
+            <h3>Hybrid RAG</h3>
+            <p>將檢索結果重新排序與篩選，協助模型產生更可靠的導覽內容。</p>
+          </article>
+          <article>
+            <h3>GPT OSS LLM</h3>
+            <p>以本地化大型語言模型生成具邏輯與脈絡的回答。</p>
+          </article>
+          <article>
+            <h3>GPT-SoVITS TTS</h3>
+            <p>將回覆轉為自然語音，提升導覽角色的臨場感。</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="visual-story">
+        <figure>
+          <img src="assets/report-media/report-04.png" alt="ASUS ASCENT GX10 設備圖片" />
+        </figure>
+        <div>
+          <p class="eyebrow">Local Deployment</p>
+          <h2>全本地化部署，兼顧反應速度與資料隱私</h2>
+          <p>
+            本專題將模型與資料庫部署在邊緣設備上，降低對雲端服務的依賴，也讓導覽場域在網路不穩定時仍能維持基本運作。
+          </p>
+        </div>
+      </section>
+
+      <section class="results band" id="results">
+        <div class="section-heading">
+          <p class="eyebrow">Results</p>
+          <h2>成果亮點</h2>
+        </div>
+        <div class="result-grid">
+          <article class="metric">
+            <strong>0.92</strong>
+            <span>檢索召回率</span>
+            <p>資料庫問答場景中，系統能有效找回相關史料內容。</p>
+          </article>
+          <article class="metric">
+            <strong>0.88</strong>
+            <span>答案相似度</span>
+            <p>生成回答與標準答案具備良好語意一致性。</p>
+          </article>
+          <article class="metric">
+            <strong>90%+</strong>
+            <span>語音相似度</span>
+            <p>GPT-SoVITS 合成語音具備接近原音檔的聲音表現。</p>
+          </article>
+        </div>
+        <div class="chart-row">
+          <figure>
+            <img src="assets/report-media/report-06.jpg" alt="GPT OSS-20B RAGAS 評分圖" />
+          </figure>
+          <figure>
+            <img src="assets/report-media/report-10.png" alt="語音相似度評估圖" />
+          </figure>
+        </div>
+      </section>
+
+      <section class="team">
+        <div>
+          <p class="eyebrow">Team</p>
+          <h2>專題團隊</h2>
+          <p>指導老師：趙于翔 副教授</p>
+          <p>專題組員：汪章貴、楊松城、吳尚樺、林彥廷、藍健洲</p>
+        </div>
+        <img src="assets/report-media/report-03.png" alt="國立金門大學標誌" />
+      </section>
+    </main>
+
+    <footer>
+      <p>AI 即時互動導覽系統｜國立金門大學資訊工程學系</p>
+    </footer>
+  </body>
+</html>
