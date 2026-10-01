@@ -434,7 +434,7 @@ function ProjectCard({
                 <circle cx="8.5" cy="8.5" r="1.5" />
                 <polyline points="21 15 16 10 5 21" />
               </svg>
-              截圖預覽
+              畫面預覽
               <span className="prj-btn__count">{project.images.length}</span>
             </button>
           )}
