@@ -47,6 +47,7 @@ export function Navbar({ theme, toggleTheme }: NavbarProps) {
         <nav className="nav" aria-label="主要導覽">
           <NavLink className="nav__link" to="/">網站介紹</NavLink>
           <NavLink className="nav__link" to="/profile">個人簡介</NavLink>
+          <NavLink className="nav__link" to="/projects">專案</NavLink>
           <NavLink className="nav__link" to="/showcase">專題成果</NavLink>
           <NavLink className="nav__link" to="/reader">小說閱讀器</NavLink>
           <NavLink className="nav__link" to="/game">打磚塊遊戲</NavLink>
@@ -145,6 +146,7 @@ export function Navbar({ theme, toggleTheme }: NavbarProps) {
         <div className="container mobileNav__inner">
           <NavLink className="mobileNav__link" to="/" onClick={closeMenu}>網站介紹</NavLink>
           <NavLink className="mobileNav__link" to="/profile" onClick={closeMenu}>個人簡介</NavLink>
+          <NavLink className="mobileNav__link" to="/projects" onClick={closeMenu}>專案</NavLink>
           <NavLink className="mobileNav__link" to="/showcase" onClick={closeMenu}>專題成果</NavLink>
           <NavLink className="mobileNav__link" to="/reader" onClick={closeMenu}>小說閱讀器</NavLink>
           <NavLink className="mobileNav__link" to="/game" onClick={closeMenu}>打磚塊遊戲</NavLink>

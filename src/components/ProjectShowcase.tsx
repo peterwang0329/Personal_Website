@@ -284,7 +284,6 @@ export function ProjectShowcase() {
             <video
               controls
               preload="metadata"
-              poster="/report-media/report-09.png"
             >
               <source src="/HuLian.mp4" type="video/mp4" />
               您的瀏覽器不支援影片播放。

@@ -11,6 +11,7 @@ import { LoginPage } from "./components/LoginPage";
 import { Library } from "./components/Library";
 import { AdminPanel } from "./components/AdminPanel";
 import { ProjectShowcase } from "./components/ProjectShowcase";
+import { Projects } from "./components/Projects";
 
 function App() {
   const { theme, toggleTheme } = useTheme();
@@ -30,6 +31,7 @@ function App() {
           <Route path="/library" element={<Library />} />
           <Route path="/admin" element={<AdminPanel />} />
           <Route path="/showcase" element={<ProjectShowcase />} />
+          <Route path="/projects" element={<Projects />} />
         </Routes>
       </main>
 
