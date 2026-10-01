@@ -281,11 +281,14 @@ function ImageModal({
         >
           ✕
         </button>
-        <img
-          src={images[idx]}
-          alt={`截圖 ${idx + 1}`}
-          className="prj-modal__img"
-        />
+        {/* 圖片容器：flex: 1 吸收可用高度，圖片在其中等比縮放 */}
+        <div className="prj-modal__img-wrap">
+          <img
+            src={images[idx]}
+            alt={`畫面 ${idx + 1}`}
+            className="prj-modal__img"
+          />
+        </div>
         {images.length > 1 && (
           <div className="prj-modal__nav">
             <button

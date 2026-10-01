@@ -2098,67 +2098,77 @@ input:focus, textarea:focus{
 .prj-modal-overlay{
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,.75);
-  backdrop-filter: blur(6px);
+  background: rgba(0,0,0,.82);
+  backdrop-filter: blur(8px);
   z-index: 9000;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 20px;
-  overflow-y: auto;
 }
 .prj-modal{
   position: relative;
-  /* 寬度跟著圖片走，不超過 95vw */
-  width: fit-content;
-  max-width: min(1100px, 95vw);
+  /* flex column: 圖片區 flex:1，導覽列固定在底部 */
+  display: flex;
+  flex-direction: column;
+  width: min(1100px, 95vw);
+  /* 最大高度留 4vh 邊距，不超出視窗 */
+  max-height: 92vh;
   background: var(--card);
   border: 1px solid var(--line2);
   border-radius: var(--radius);
   overflow: hidden;
-  box-shadow: 0 40px 120px rgba(0,0,0,.7);
+  box-shadow: 0 40px 120px rgba(0,0,0,.8);
   animation: prj-modal-in .25s var(--ease);
-  /* 讓 overlay 以 flexbox 置中，才能配合 fit-content */
 }
 @keyframes prj-modal-in{
-  from{ opacity: 0; transform: scale(.94); }
+  from{ opacity: 0; transform: scale(.93); }
   to{ opacity: 1; transform: scale(1); }
 }
 .prj-modal__close{
   position: absolute;
   top: 12px; right: 12px;
-  z-index: 1;
+  z-index: 2;
   width: 36px; height: 36px;
   border-radius: 50%;
   border: 1px solid var(--line2);
-  background: var(--card2);
-  color: var(--text);
+  background: rgba(0,0,0,.55);
+  color: #fff;
   font-size: 1rem;
   cursor: pointer;
   display: grid;
   place-items: center;
   transition: background .2s var(--ease);
 }
-.prj-modal__close:hover{ background: var(--primary); color: #fff; }
+.prj-modal__close:hover{ background: var(--primary); }
+/* 圖片容器：填滿 flex 空間，圖片在其中 object-fit 等比縮放 */
+.prj-modal__img-wrap{
+  flex: 1;
+  min-height: 0;          /* 讓 flex child 可以正確收縮 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+  overflow: hidden;
+}
 .prj-modal__img{
-  /* 自動縮放：不超過 90vw 寬、不超過 80vh 高，但可以更小 */
+  /* 填滿容器但保持比例，絕不溢出 */
   display: block;
-  max-width: min(1060px, 90vw);
-  max-height: 80vh;
+  max-width: 100%;
+  max-height: 100%;
   width: auto;
   height: auto;
   object-fit: contain;
-  background: var(--bg);
-  /* 讓圖片在 modal 內置中 */
-  margin: 0 auto;
 }
 .prj-modal__nav{
+  flex-shrink: 0;          /* 固定高度，不被壓縮 */
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 16px;
-  padding: 14px;
+  padding: 12px 16px;
   border-top: 1px solid var(--line);
+  background: var(--card);
 }
 .prj-modal__nav-btn{
   width: 38px; height: 38px;
