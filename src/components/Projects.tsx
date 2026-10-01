@@ -281,14 +281,11 @@ function ImageModal({
         >
           ✕
         </button>
-        {/* 圖片容器：flex: 1 吸收可用高度，圖片在其中等比縮放 */}
-        <div className="prj-modal__img-wrap">
-          <img
-            src={images[idx]}
-            alt={`畫面 ${idx + 1}`}
-            className="prj-modal__img"
-          />
-        </div>
+        <img
+          src={images[idx]}
+          alt={`截圖 ${idx + 1}`}
+          className="prj-modal__img"
+        />
         {images.length > 1 && (
           <div className="prj-modal__nav">
             <button
@@ -510,9 +507,8 @@ export function Projects() {
             {FILTERS.map((f) => (
               <button
                 key={f.key}
-                className={`prj-filter-btn${
-                  activeFilter === f.key ? " prj-filter-btn--active" : ""
-                }`}
+                className={`prj-filter-btn${activeFilter === f.key ? " prj-filter-btn--active" : ""
+                  }`}
                 onClick={() => setActiveFilter(f.key)}
                 role="tab"
                 aria-selected={activeFilter === f.key}
