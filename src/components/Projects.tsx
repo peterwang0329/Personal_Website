@@ -494,7 +494,7 @@ export function Projects() {
             </p>
             <div className="prj-hero__stats">
               <div className="prj-stat">
-                <strong>9</strong>
+                <strong>8</strong>
                 <span>個人專案</span>
               </div>
               <div className="prj-stat">
@@ -567,7 +567,7 @@ export function Projects() {
               },
               {
                 label: "AI / ML 框架",
-                items: [          
+                items: [
                   "PyTorch",
                   "scikit-learn",
                   "YOLOv8",
