@@ -116,7 +116,6 @@ export function Profile() {
                   <div className="event__time">{exp.time}</div>
                   <div>
                     <h3 className="event__title">{exp.title}</h3>
-                    <p className="event__body">{exp.body}</p>
                   </div>
                 </div>
               ))}

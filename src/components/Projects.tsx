@@ -494,7 +494,7 @@ export function Projects() {
             </p>
             <div className="prj-hero__stats">
               <div className="prj-stat">
-                <strong>8</strong>
+                <strong>9</strong>
                 <span>個人專案</span>
               </div>
               <div className="prj-stat">
@@ -502,7 +502,7 @@ export function Projects() {
                 <span>技術領域</span>
               </div>
               <div className="prj-stat">
-                <strong>10+</strong>
+                <strong>15+</strong>
                 <span>程式語言 / 框架</span>
               </div>
             </div>
@@ -558,6 +558,7 @@ export function Projects() {
                 label: "程式語言",
                 items: [
                   "Python",
+                  "C",
                   "C#",
                   "C++ (Arduino)",
                   "JavaScript",
@@ -565,23 +566,24 @@ export function Projects() {
                 ],
               },
               {
-                label: "框架工具",
-                items: [
-                  "FastAPI",
-                  "WPF",
-                  "Unity",
+                label: "AI / ML 框架",
+                items: [          
+                  "PyTorch",
                   "scikit-learn",
-                  "pandas",
-                  "Matplotlib",
+                  "YOLOv8",
+                  "Whisper",
+                  "Ollama",
+                  "RAGAS",
+                  "Resemblyzer",
                 ],
               },
               {
-                label: "硬體 / IoT",
-                items: ["ESP32S", "DS18B20", "Arduino IDE"],
+                label: "RAG / LLM 工具",
+                items: ["Qdrant", "Hybrid RAG", "GPT-SoVITS", "WebSocket", "FastAPI"],
               },
               {
-                label: "資料庫 / 部署",
-                items: ["SQLite", "Render", "GitHub Pages"],
+                label: "硬體 / IoT / 其他",
+                items: ["ESP32S", "ASUS ASCENT GX10", "Unity", "WPF", "SQLite", "Render"],
               },
             ].map((group, i) => (
               <FadeIn
